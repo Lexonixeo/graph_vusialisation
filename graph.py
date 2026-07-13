@@ -7,7 +7,7 @@ node_update_delta_t = 1
 antigravity_force_const = -1
 spring_delta_weight_len = 10
 spring_start_len = 0
-spring_standard_length_constant = 100
+spring_standard_length_restoring_constant = 1
 spring_standard_length = 10
 generate_graph_max_x = 100
 generate_max_edge_weight = 10
@@ -21,22 +21,26 @@ def spring_length(weight):
 
 
 def spring_restoring_const(length):
-    return spring_standard_length_constant * spring_standard_length / length
+    return spring_standard_length_restoring_constant * spring_standard_length / length
 
 
 class Node:
-    def __init__(self, node_id,
-                 x=random.random() * generate_graph_max_x * 2 - generate_graph_max_x,
-                 y=random.random() * generate_graph_max_x * 2 - generate_graph_max_x):
+    def __init__(self, node_id, x="", y=""):
+        if x == "": x = random.random() * generate_graph_max_x * 2 - generate_graph_max_x
+        if y == "": y = random.random() * generate_graph_max_x * 2 - generate_graph_max_x
         self.node_id = node_id
         self.point = np.array([x, y])
-        self.force = np.array([0, 0])
-        self.velocity = np.array([0, 0])
+        self.force = np.array([0.0, 0.0])
+        self.velocity = np.array([0.0, 0.0])
 
     def update(self):
+        if np.isnan(self.point[0]):
+            print("HEY")
         self.velocity += self.force * node_update_delta_t / node_mass
         self.point += self.velocity * node_update_delta_t
-        self.force = np.array([0, 0])
+        if np.isnan(self.point[0]):
+            print("HEY")
+        self.force = np.array([0.0, 0.0])
 
     def shuffle(self):
         self.point = np.array([random.random() * generate_graph_max_x * 2 - generate_graph_max_x,
@@ -61,6 +65,8 @@ class Graph:
     def anti_gravity_update(self):
         for u_id in self.nodes.keys():  # первая нода действует на вторую
             for v_id in self.nodes.keys():
+                if v_id == u_id:
+                    continue
                 radius_vector = np.subtract(self.nodes[u_id].point, self.nodes[v_id].point)
                 distance = np.linalg.norm(radius_vector)
                 force_value = antigravity_force_const * node_mass * node_mass / (distance ** 2)
@@ -75,6 +81,8 @@ class Graph:
                 radius_vector = np.subtract(self.nodes[u_id].point, self.nodes[v_id].point)
                 distance = np.linalg.norm(radius_vector)
                 delta_x = distance - length
+                if abs(delta_x) > 100:
+                    delta_x = np.sign(delta_x) * 100
                 delta_force = -1 * spring_restoring_const(length) * delta_x
                 self.nodes[v_id].force += delta_force
 
@@ -118,8 +126,10 @@ class Graph:
             raise Exception("В графе новое ребро не сгенерировано.")
 
 
-def generate_graph(nodes_count=int(random.random() * generate_max_nodes_count),
+def generate_graph(nodes_count=-1,
                    edges_count=-1):
+    if nodes_count == -1:
+        nodes_count = int(random.random() * generate_max_nodes_count)
     if edges_count == -1:
         edges_count = min(nodes_count * (nodes_count - 1) // 2,
                           int(nodes_count * generate_max_edges_count_to_nodes_count))
