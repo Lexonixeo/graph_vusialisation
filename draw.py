@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     flag_running = True
     while flag_running:
-        # g.update()
+        g.update()
 
         screen.fill((255, 255, 255))
         draw_edges(screen, camera_graph_point, g)

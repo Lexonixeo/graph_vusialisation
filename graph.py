@@ -3,11 +3,11 @@ import random
 
 
 node_mass = 1
-node_update_delta_t = 0.001
+node_update_delta_t = 1
 antigravity_force_const = -1
 spring_delta_weight_len = 10
 spring_start_len = 0
-spring_standard_length_restoring_constant = 1
+spring_standard_length_restoring_constant = 0.00001
 spring_standard_length = 10
 generate_graph_max_x = 100
 generate_max_edge_weight = 10
@@ -21,7 +21,7 @@ def spring_length(weight):
 
 
 def spring_restoring_const(length):
-    return spring_standard_length_restoring_constant * spring_standard_length / length
+    return spring_standard_length_restoring_constant  # * spring_standard_length / length
 
 
 class Node:
@@ -73,6 +73,8 @@ class Graph:
                 delta_force = radius_vector / distance * force_value
                 self.nodes[v_id].force += delta_force
 
+
+    # ОЧЕНЬ СИЛЬНО!!!
     def spring_edge_update(self):
         for u_id in self.nodes.keys():  # первая нода действует на вторую
             for v_id in self.edges[u_id].keys():
@@ -83,11 +85,11 @@ class Graph:
                 delta_x = distance - length
                 if abs(delta_x) > 100:
                     delta_x = np.sign(delta_x) * 100
-                delta_force = -1 * spring_restoring_const(length) * delta_x
+                delta_force = radius_vector / distance * spring_restoring_const(length) * delta_x
                 self.nodes[v_id].force += delta_force
 
     def update(self):
-        self.anti_gravity_update()
+        # self.anti_gravity_update()
         self.spring_edge_update()
         for node_id in self.nodes.keys():
             self.nodes[node_id].update()
