@@ -4,7 +4,7 @@ import graph
 
 screen_width = 1600
 screen_height = 900
-graph_to_pix_const = 3
+graph_to_pix_const = 1
 screen_name = 'Визуализатор графа'
 node_radius = 20
 node_color = (0, 0, 0)
@@ -49,7 +49,7 @@ def draw_edges(screen, camera_graph_point, g: graph.Graph):
 
 
 if __name__ == '__main__':
-    g = graph.generate_graph(5, 6)
+    g = graph.generate_graph(10, 12)
 
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))

@@ -4,16 +4,18 @@ import random
 
 node_mass = 1
 node_update_delta_t = 1
-antigravity_force_const = -1
-spring_delta_weight_len = 10
+antigravity_force_const = -2
+spring_delta_weight_len = 25
 spring_start_len = 0
 spring_standard_length_restoring_constant = 0.00001
-spring_standard_length = 10
+spring_standard_length = 50
 generate_graph_max_x = 100
 generate_max_edge_weight = 10
 generate_max_nodes_count = 20
 generate_max_edges_count_to_nodes_count = 2
 generate_max_divider_if_max_edges_count_is_min = 3
+friction_const = 0.0003
+friction_normal_reaction_force = 1
 
 
 def spring_length(weight):
@@ -73,8 +75,6 @@ class Graph:
                 delta_force = radius_vector / distance * force_value
                 self.nodes[v_id].force += delta_force
 
-
-    # ОЧЕНЬ СИЛЬНО!!!
     def spring_edge_update(self):
         for u_id in self.nodes.keys():  # первая нода действует на вторую
             for v_id in self.edges[u_id].keys():
@@ -88,9 +88,25 @@ class Graph:
                 delta_force = radius_vector / distance * spring_restoring_const(length) * delta_x
                 self.nodes[v_id].force += delta_force
 
+    # Сила трения, чтобы убрать энергию
+    def friction_update(self):
+        for u_id in self.nodes.keys():
+            friction_force = friction_const * friction_normal_reaction_force
+            if np.all(self.nodes[u_id].velocity == 0):
+                force_value = np.linalg.norm(self.nodes[u_id].force)
+                if force_value <= friction_force:
+                    self.nodes[u_id].force -= self.nodes[u_id].force
+                else:
+                    self.nodes[u_id].force -= self.nodes[u_id].force / force_value * friction_force
+            else:
+                velocity_radius_vector = self.nodes[u_id].velocity / np.linalg.norm(self.nodes[u_id].velocity)
+                self.nodes[u_id].force += -1 * velocity_radius_vector * friction_force
+
+
     def update(self):
-        # self.anti_gravity_update()
+        self.anti_gravity_update()
         self.spring_edge_update()
+        self.friction_update()
         for node_id in self.nodes.keys():
             self.nodes[node_id].update()
 
