@@ -29,10 +29,23 @@ def graph_to_pix(camera_graph_point, graph_point):
 # Пускай я просто реализую через pygame.draw
 def draw_node(screen, camera_graph_point, n: graph.Node, font):
     center = graph_to_pix(camera_graph_point, n.point)
+    pygame.draw.circle(screen, (255, 255, 255), center, node_radius)
     pygame.draw.circle(screen, (0, 0, 0), center, node_radius, node_circle_width)
     text = font.render(str(n.node_id), False, node_color)
-
     screen.blit(text, (center[0] - node_radius // 2, center[1] - node_radius))
+
+
+def draw_edge(screen, camera_graph_point, g: graph.Graph, u_id, v_id):
+    pos1 = graph_to_pix(camera_graph_point, g.nodes[u_id].point)
+    pos2 = graph_to_pix(camera_graph_point, g.nodes[v_id].point)
+    pygame.draw.line(screen, (0, 0, 0), pos1, pos2, node_circle_width)
+
+
+# рисует одно ребро дважды
+def draw_edges(screen, camera_graph_point, g: graph.Graph):
+    for u_id in g.nodes.keys():
+        for v_id in g.edges[u_id].keys():
+            draw_edge(screen, camera_graph_point, g, u_id, v_id)
 
 
 if __name__ == '__main__':
@@ -53,6 +66,7 @@ if __name__ == '__main__':
         # g.update()
 
         screen.fill((255, 255, 255))
+        draw_edges(screen, camera_graph_point, g)
         for node in g.nodes.values():
             draw_node(screen, camera_graph_point, node, my_font)
 

@@ -3,7 +3,7 @@ import random
 
 
 node_mass = 1
-node_update_delta_t = 1
+node_update_delta_t = 0.001
 antigravity_force_const = -1
 spring_delta_weight_len = 10
 spring_start_len = 0
