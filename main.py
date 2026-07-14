@@ -21,8 +21,8 @@ s["start_graph_to_pix_const"] = 1
 s["scaling_base"] = 2 ** 0.5
 
 s["node_mass"] = 1
-s["antigravity_force_const"] = -2
-s["antigravity_epsilon"] = 0.001
+s["antigravity_force_const"] = -10  # -2
+s["antigravity_epsilon"] = 0.01
 s["spring_delta_weight_len"] = 25
 s["spring_start_len"] = 0
 s["spring_standard_length_restoring_constant"] = 0.00001
@@ -30,6 +30,8 @@ s["spring_standard_length"] = 50
 s["friction_const"] = 0.0003  # 0.0003 best
 s["friction_normal_reaction_force"] = 1
 s["friction_epsilon"] = 0.001
+s["fast_real_time"] = 30
+s["is_real_time"] = False
 
 s["generate_graph_max_x"] = 100
 s["generate_max_edge_weight"] = 10
@@ -38,7 +40,11 @@ s["generate_max_edges_count_to_nodes_count"] = 2
 s["generate_max_divider_if_max_edges_count_is_min"] = 3
 
 
+# можно когда-нибудь реализовать здесь показ алгоритмов на графах
+# добавить импорт графов из файлов?
 if __name__ == '__main__':
-    g = graph.generate_graph(s, 15, 15)
+    g = graph.Graph(s)
+    for i in range(1):
+        g += graph.generate_graph(s, 20, 22)
     v = visualiser.Visualiser(g, s)
     v.run()

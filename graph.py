@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 
 import main
 import physics
@@ -15,7 +16,10 @@ class Node:
         if y == "":
             y = self.get_random_x()
         self.node_id = node_id
-        self.point = physics.Point((x, y), 0, s)
+        if s["is_real_time"]:
+            self.point = physics.Point((x, y), s["fast_real_time"] * time.time(), s)
+        else:
+            self.point = physics.Point((x, y), 0, s)
 
     def get_random_x(self):
         return random.random() * self.generate_graph_max_x * 2 - self.generate_graph_max_x
@@ -48,10 +52,14 @@ class Graph:
         for node_id in self.nodes.keys():
             self.nodes[node_id].shuffle()
 
-    def generate_node(self):
+    def get_last_node_id(self):
         last_node_id = 0
         if len(self.nodes) != 0:
             last_node_id = sorted(list(self.nodes.keys()))[-1]
+        return last_node_id
+
+    def generate_node(self):
+        last_node_id = self.get_last_node_id()
         new_node = Node(last_node_id + 1, self.s)
         self.add_node(new_node)
 
@@ -79,6 +87,33 @@ class Graph:
             pass
             # raise Exception("В графе новое ребро не сгенерировано.")
 
+    def __iadd__(self, other):
+        last_node_id = self.get_last_node_id()
+        add = last_node_id + 1
+        for node in other.nodes.values():
+            self.add_node(Node(add + node.node_id, self.s, node.point.position[0], node.point.position[1]))
+        for u_id in other.edges.keys():
+            for v_id in other.edges[u_id].keys():
+                self.add_edge(add + u_id, add + v_id, other.edges[u_id][v_id])
+        return self
+
+    def __add__(self, other):
+        new = Graph(self.s)
+        for node in self.nodes.values():
+            new.add_node(Node(node.node_id, self.s, node.point.position[0], node.point.position[1]))
+        for u_id in self.edges.keys():
+            for v_id in self.edges[u_id].keys():
+                new.add_edge(u_id, v_id, self.edges[u_id][v_id])
+
+        last_node_id = new.get_last_node_id()
+        add = last_node_id + 1
+        for node in other.nodes:
+            new.add_node(Node(add + node.node_id, new.s, node.point.position[0], node.point.position[1]))
+        for u_id in other.edges.keys():
+            for v_id in other.edges[u_id].keys():
+                new.add_edge(add + u_id, add + v_id, other.edges[u_id][v_id])
+        return new
+
 
 def generate_graph(s: dict,
                    nodes_count=-1,
@@ -100,6 +135,6 @@ def generate_graph(s: dict,
 
 
 if __name__ == '__main__':
-    g = generate_graph(main.s, 5, 6)
-    print(g.nodes)
-    print(g.edges)
+    gg = generate_graph(main.s, 5, 6)
+    print(gg.nodes)
+    print(gg.edges)

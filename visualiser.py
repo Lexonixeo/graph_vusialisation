@@ -1,4 +1,5 @@
 import pygame
+import time
 
 import graph
 import camera
@@ -24,7 +25,10 @@ class Visualiser:
         pygame.display.set_icon(pygame.image.load('images/icon.png'))
 
     def update(self):
-        self.pe.update(self.step)
+        if self.s["is_real_time"]:
+            self.pe.update(self.s["fast_real_time"] * time.time())
+        else:
+            self.pe.update(self.step)
 
     # Можно каждому ноду сопоставить pygame.surface уже заранее отрисованный. (рисовать через pygame.surface.blit)
     # Я не знаю где их можно хранить, когда ноды добавляются/убираются.
@@ -86,10 +90,8 @@ class Visualiser:
                                 self.g.random_shuffle()
                     case pygame.MOUSEBUTTONDOWN:
                         flag_mouse_buttons[event.button] = True
-                        print(event)
                     case pygame.MOUSEBUTTONUP:
                         flag_mouse_buttons[event.button] = False
-                        print(event)
                     case pygame.MOUSEWHEEL:
                         # поворот вперед
                         self.c.scaling(pygame.mouse.get_pos(), event.y)
@@ -97,7 +99,7 @@ class Visualiser:
 
 if __name__ == '__main__':
     # g = graph.generate_graph(10, 12)
-    g = graph.generate_graph(main.s, 15, 15)
-    v = Visualiser(g, main.s)
+    gg = graph.generate_graph(main.s, 15, 15)
+    v = Visualiser(gg, main.s)
     v.run()
     pass
