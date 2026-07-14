@@ -102,6 +102,11 @@ class Graph:
     def update(self):
         self.anti_gravity_update()
         self.spring_edge_update()
+        # отталкивание от ребер?
+        # отталкивание пересечений рёбер?
+        # притяжение к центру?
+        # отталкивание от границ?
+        # при необходимости воздействие случайной силы на вершину?
         self.friction_update()
         for node_id in self.nodes.keys():
             self.nodes[node_id].update()

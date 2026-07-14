@@ -1,16 +1,29 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import graph
+import visualiser
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+s = dict()
+
+s["screen_name"] = "Визуализатор графа"
+s["start_screen_width"] = 1600
+s["start_screen_height"] = 900
+
+s["node_radius"] = 5
+s["node_color"] = (255, 255, 255)
+s["node_width"] = 5
+s["edge_width"] = 5
+s["bg_color"] = (0, 0, 0)
+s["draw_text"] = False
+s["font_name"] = 'Arial'
+s["font_size"] = 30
+
+s["start_graph_to_pix_const"] = 1
+s["scaling_base"] = 2 ** 0.5
+
+s[""] = ""
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    g = graph.generate_graph(15, 15)
+    v = visualiser.Visualiser(g, s)
+    v.run()
