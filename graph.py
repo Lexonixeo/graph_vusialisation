@@ -14,7 +14,7 @@ generate_max_edge_weight = 10
 generate_max_nodes_count = 20
 generate_max_edges_count_to_nodes_count = 2
 generate_max_divider_if_max_edges_count_is_min = 3
-friction_const = 0.0003
+friction_const = 0.0003  # 0.0003 best
 friction_normal_reaction_force = 1
 
 
@@ -36,12 +36,8 @@ class Node:
         self.velocity = np.array([0.0, 0.0])
 
     def update(self):
-        if np.isnan(self.point[0]):
-            print("HEY")
         self.velocity += self.force * node_update_delta_t / node_mass
         self.point += self.velocity * node_update_delta_t
-        if np.isnan(self.point[0]):
-            print("HEY")
         self.force = np.array([0.0, 0.0])
 
     def shuffle(self):
@@ -124,7 +120,8 @@ class Graph:
     def generate_edge(self):
         nodes_count = len(self.nodes)
         if self.edges_count == nodes_count * (nodes_count - 1) // 2:
-            raise Exception("В графе все рёбра уже созданы.")
+            pass
+            # raise Exception("В графе все рёбра уже созданы.")
         weight = random.random() * generate_max_edge_weight
         random_nodes = random.sample(list(self.nodes.keys()), len(self.nodes.keys()))
         flag_made = False
@@ -141,7 +138,8 @@ class Graph:
             if flag_made:
                 break
         if not flag_made:
-            raise Exception("В графе новое ребро не сгенерировано.")
+            pass
+            # raise Exception("В графе новое ребро не сгенерировано.")
 
 
 def generate_graph(nodes_count=-1,
