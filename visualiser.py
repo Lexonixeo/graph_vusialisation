@@ -59,8 +59,12 @@ class Visualiser:
     # разделить ивенты на def?
     # добавить скриншот?
     # добавить проверку на то, остановилось ли всё? - сумма кинетических энергий
+    # добавить передвижение вершины?
     def run(self):
         flag_running = True
+        flag_mouse_buttons = dict()
+        for i in range(7):
+            flag_mouse_buttons[i] = False
         while flag_running:
             self.step += 1
             self.update()
@@ -81,7 +85,11 @@ class Visualiser:
                             case pygame.K_r:
                                 self.g.random_shuffle()
                     case pygame.MOUSEBUTTONDOWN:
-                        pass
+                        flag_mouse_buttons[event.button] = True
+                        print(event)
+                    case pygame.MOUSEBUTTONUP:
+                        flag_mouse_buttons[event.button] = False
+                        print(event)
                     case pygame.MOUSEWHEEL:
                         # поворот вперед
                         self.c.scaling(pygame.mouse.get_pos(), event.y)
