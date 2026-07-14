@@ -1,55 +1,40 @@
 import numpy as np
 import random
 
-
-node_mass = 1
-node_update_delta_t = 1
-antigravity_force_const = -2
-spring_delta_weight_len = 25
-spring_start_len = 0
-spring_standard_length_restoring_constant = 0.00001
-spring_standard_length = 50
-generate_graph_max_x = 100
-generate_max_edge_weight = 10
-generate_max_nodes_count = 20
-generate_max_edges_count_to_nodes_count = 2
-generate_max_divider_if_max_edges_count_is_min = 3
-friction_const = 0.0003  # 0.0003 best
-friction_normal_reaction_force = 1
-
-
-def spring_length(weight):
-    return spring_delta_weight_len * weight + spring_start_len
-
-
-def spring_restoring_const(length):
-    return spring_standard_length_restoring_constant  # * spring_standard_length / length
+import main
+import physics
 
 
 class Node:
-    def __init__(self, node_id, x="", y=""):
-        if x == "": x = random.random() * generate_graph_max_x * 2 - generate_graph_max_x
-        if y == "": y = random.random() * generate_graph_max_x * 2 - generate_graph_max_x
+    # may be problem with x: str and y: str, надо :float, :float, но при этом
+    # если они не указаны, то рандом.
+    def __init__(self, node_id, s: dict, x="", y=""):
+        self.generate_graph_max_x = s["generate_graph_max_x"]
+        if x == "":
+            x = self.get_random_x()
+        if y == "":
+            y = self.get_random_x()
         self.node_id = node_id
-        self.point = np.array([x, y])
-        self.force = np.array([0.0, 0.0])
-        self.velocity = np.array([0.0, 0.0])
+        self.point = physics.Point((x, y), 0, s)
 
-    def update(self):
-        self.velocity += self.force * node_update_delta_t / node_mass
-        self.point += self.velocity * node_update_delta_t
-        self.force = np.array([0.0, 0.0])
+    def get_random_x(self):
+        return random.random() * self.generate_graph_max_x * 2 - self.generate_graph_max_x
+
+    def set_position(self, position):
+        self.point.position = np.array(position)
+        self.point.velocity = np.array([0.0, 0.0])
 
     def shuffle(self):
-        self.point = np.array([random.random() * generate_graph_max_x * 2 - generate_graph_max_x,
-                               random.random() * generate_graph_max_x * 2 - generate_graph_max_x])
+        self.set_position([self.get_random_x(), self.get_random_x()])
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, s: dict):
         self.nodes = dict()  # id -> Node
         self.edges = dict()  # u_id -> dict(): v_id -> weight
         self.edges_count = 0
+        self.s = s
+        self.pe = physics.PhysicsEngine(self, s)
 
     def add_node(self, node):
         self.nodes[node.node_id] = node
@@ -60,57 +45,6 @@ class Graph:
         self.edges[v_id][u_id] = weight
         self.edges_count += 1
 
-    def anti_gravity_update(self):
-        for u_id in self.nodes.keys():  # первая нода действует на вторую
-            for v_id in self.nodes.keys():
-                if v_id == u_id:
-                    continue
-                radius_vector = np.subtract(self.nodes[u_id].point, self.nodes[v_id].point)
-                distance = np.linalg.norm(radius_vector)
-                force_value = antigravity_force_const * node_mass * node_mass / (distance ** 2)
-                delta_force = radius_vector / distance * force_value
-                self.nodes[v_id].force += delta_force
-
-    def spring_edge_update(self):
-        for u_id in self.nodes.keys():  # первая нода действует на вторую
-            for v_id in self.edges[u_id].keys():
-                weight = self.edges[u_id][v_id]
-                length = spring_length(weight)
-                radius_vector = np.subtract(self.nodes[u_id].point, self.nodes[v_id].point)
-                distance = np.linalg.norm(radius_vector)
-                delta_x = distance - length
-                if abs(delta_x) > 100:
-                    delta_x = np.sign(delta_x) * 100
-                delta_force = radius_vector / distance * spring_restoring_const(length) * delta_x
-                self.nodes[v_id].force += delta_force
-
-    # Сила трения, чтобы убрать энергию
-    def friction_update(self):
-        for u_id in self.nodes.keys():
-            friction_force = friction_const * friction_normal_reaction_force
-            if np.all(self.nodes[u_id].velocity == 0):
-                force_value = np.linalg.norm(self.nodes[u_id].force)
-                if force_value <= friction_force:
-                    self.nodes[u_id].force -= self.nodes[u_id].force
-                else:
-                    self.nodes[u_id].force -= self.nodes[u_id].force / force_value * friction_force
-            else:
-                velocity_radius_vector = self.nodes[u_id].velocity / np.linalg.norm(self.nodes[u_id].velocity)
-                self.nodes[u_id].force += -1 * velocity_radius_vector * friction_force
-
-
-    def update(self):
-        self.anti_gravity_update()
-        self.spring_edge_update()
-        # отталкивание от ребер?
-        # отталкивание пересечений рёбер?
-        # притяжение к центру?
-        # отталкивание от границ?
-        # при необходимости воздействие случайной силы на вершину?
-        self.friction_update()
-        for node_id in self.nodes.keys():
-            self.nodes[node_id].update()
-
     def random_shuffle(self):
         for node_id in self.nodes.keys():
             self.nodes[node_id].shuffle()
@@ -119,7 +53,7 @@ class Graph:
         last_node_id = 0
         if len(self.nodes) != 0:
             last_node_id = sorted(list(self.nodes.keys()))[-1]
-        new_node = Node(last_node_id + 1)
+        new_node = Node(last_node_id + 1, self.s)
         self.add_node(new_node)
 
     def generate_edge(self):
@@ -127,7 +61,7 @@ class Graph:
         if self.edges_count == nodes_count * (nodes_count - 1) // 2:
             pass
             # raise Exception("В графе все рёбра уже созданы.")
-        weight = random.random() * generate_max_edge_weight
+        weight = random.random() * self.s["generate_max_edge_weight"]
         random_nodes = random.sample(list(self.nodes.keys()), len(self.nodes.keys()))
         flag_made = False
         for i in range(len(random_nodes)):
@@ -147,17 +81,18 @@ class Graph:
             # raise Exception("В графе новое ребро не сгенерировано.")
 
 
-def generate_graph(nodes_count=-1,
+def generate_graph(s: dict,
+                   nodes_count=-1,
                    edges_count=-1):
     if nodes_count == -1:
-        nodes_count = int(random.random() * generate_max_nodes_count)
+        nodes_count = int(random.random() * s["generate_max_nodes_count"])
     if edges_count == -1:
         edges_count = min(nodes_count * (nodes_count - 1) // 2,
-                          int(nodes_count * generate_max_edges_count_to_nodes_count))
+                          int(nodes_count * s["generate_max_edges_count_to_nodes_count"]))
         if edges_count == nodes_count * (nodes_count - 1) // 2:
-            divider = random.random() * (generate_max_divider_if_max_edges_count_is_min - 1) + 1
+            divider = random.random() * (s["generate_max_divider_if_max_edges_count_is_min"] - 1) + 1
             edges_count = int(edges_count / divider)
-    g = Graph()
+    g = Graph(s)
     for i in range(nodes_count):
         g.generate_node()
     for i in range(edges_count):
@@ -166,6 +101,6 @@ def generate_graph(nodes_count=-1,
 
 
 if __name__ == '__main__':
-    g = generate_graph(5, 6)
+    g = generate_graph(main.s, 5, 6)
     print(g.nodes)
     print(g.edges)

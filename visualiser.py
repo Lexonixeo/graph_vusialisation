@@ -22,13 +22,13 @@ class Visualiser:
         pygame.display.set_icon(pygame.image.load('images/icon.png'))
 
     def update(self):
-        self.g.update()
+        self.g.pe.update(self.step)
 
     # Можно каждому ноду сопоставить pygame.surface уже заранее отрисованный. (рисовать через pygame.surface.blit)
     # Я не знаю где их можно хранить, когда ноды добавляются/убираются.
     # Пускай я просто реализую через pygame.draw
     def draw_node(self, n: graph.Node):
-        center = self.c.graph_to_pix(n.point)
+        center = self.c.graph_to_pix(n.point.position)
         pygame.draw.circle(self.screen, self.s["bg_color"], center, self.s["node_radius"])
         pygame.draw.circle(self.screen, self.s["node_color"], center, self.s["node_radius"], self.s["node_width"])
 
@@ -37,9 +37,10 @@ class Visualiser:
             self.screen.blit(text, (center[0] - self.s["node_radius"] // 2, center[1] - self.s["node_radius"]))
 
     def draw_edge(self, u_id, v_id):
-        pos1 = self.c.graph_to_pix(self.g.nodes[u_id].point)
-        pos2 = self.c.graph_to_pix(self.g.nodes[v_id].point)
+        pos1 = self.c.graph_to_pix(self.g.nodes[u_id].point.position)
+        pos2 = self.c.graph_to_pix(self.g.nodes[v_id].point.position)
         pygame.draw.line(self.screen, self.s["node_color"], pos1, pos2, self.s["edge_width"])
+        # рисовать ли вес ребра?
 
     def draw(self):
         self.screen.fill(self.s["bg_color"])
@@ -53,6 +54,9 @@ class Visualiser:
         for node in self.g.nodes.values():
             self.draw_node(node)
 
+    # разделить ивенты на def?
+    # добавить скриншот?
+    # добавить проверку на то, остановилось ли всё? - сумма кинетических энергий
     def run(self):
         flag_running = True
         while flag_running:
