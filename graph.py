@@ -34,7 +34,6 @@ class Graph:
         self.edges = dict()  # u_id -> dict(): v_id -> weight
         self.edges_count = 0
         self.s = s
-        self.pe = physics.PhysicsEngine(self, s)
 
     def add_node(self, node):
         self.nodes[node.node_id] = node

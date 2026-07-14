@@ -3,6 +3,7 @@ import pygame
 import graph
 import camera
 import main
+import physics
 
 
 class Visualiser:
@@ -12,6 +13,7 @@ class Visualiser:
         self.screen_height = s["start_screen_height"]
         self.screen_name = s["screen_name"]
         self.g = g
+        self.pe = physics.PhysicsEngine(g, s)
         self.c = camera.Camera(s)
         self.s = s
 
@@ -22,7 +24,7 @@ class Visualiser:
         pygame.display.set_icon(pygame.image.load('images/icon.png'))
 
     def update(self):
-        self.g.pe.update(self.step)
+        self.pe.update(self.step)
 
     # Можно каждому ноду сопоставить pygame.surface уже заранее отрисованный. (рисовать через pygame.surface.blit)
     # Я не знаю где их можно хранить, когда ноды добавляются/убираются.
@@ -87,7 +89,7 @@ class Visualiser:
 
 if __name__ == '__main__':
     # g = graph.generate_graph(10, 12)
-    g = graph.generate_graph(15, 15)
+    g = graph.generate_graph(main.s, 15, 15)
     v = Visualiser(g, main.s)
     v.run()
     pass
